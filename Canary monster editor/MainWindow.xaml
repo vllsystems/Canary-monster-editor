@@ -125,7 +125,8 @@
                             FontSize="13"
                             FontFamily="Segoe UI"
                             CaretBrush="White"/>
-                    <TextBlock Text="Search by name or ID..."
+                    <TextBlock x:Name="SearchPlaceholder_textblock"
+                            Text="Search by name or ID..."
                             IsHitTestVisible="False"
                             Foreground="#FF888888"
                             VerticalAlignment="Center"

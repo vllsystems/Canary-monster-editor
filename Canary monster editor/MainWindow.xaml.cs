@@ -34,6 +34,7 @@ namespace Canary_monster_editor
         public bool HasGlobalChangeMade = false;
         public InternalItemList SelectedCreature = null;
         public ListType SelectedListType_t = ListType.Monsters;
+        private bool _isSearchReloading = false;
 
         private static readonly string InternalFacebookUri = "https://fb.me/otservbrasil";
         private static readonly string InternalGithubUri = "https://github.com/opentibiabr";
@@ -460,7 +461,8 @@ namespace Canary_monster_editor
                 return;
             }
 
-            if (SelectedCreature != null && HasChangeMade) {
+            // Skip discard warning during search reloads
+            if (SelectedCreature != null && HasChangeMade && !_isSearchReloading) {
                 MessageBoxResult warnResult = MessageBox.Show(this, String.Format(GetCultureText(TranslationDictionaryIndex.DiscardUnsavedChanges),
                     (SelectedListType_t == ListType.Monsters ? GetCultureText(TranslationDictionaryIndex.Monster).ToLower() : GetCultureText(TranslationDictionaryIndex.Boss).ToLower())),
                     GetCultureText(TranslationDictionaryIndex.DiscardUnsavedChangesTitle),
@@ -478,7 +480,9 @@ namespace Canary_monster_editor
         }
         private void Search_textbox_TextChanged(object sender, TextChangedEventArgs e)
         {
+            _isSearchReloading = true;
             ReloadMainListBox();
+            _isSearchReloading = false;
         }
         private void MainURIMouseDown_rectangle(object sender, MouseButtonEventArgs e)
         {
@@ -582,6 +586,7 @@ namespace Canary_monster_editor
             ShowSave_textblock.Text = GetCultureText(TranslationDictionaryIndex.Save);
             ToolName_textblock.Text = "Canary monster editor " + GlobalVersion;
             ExportImportButon_textblock.Text = GetCultureText(TranslationDictionaryIndex.ExportImport);
+            SearchPlaceholder_textblock.Text = GetCultureText(TranslationDictionaryIndex.SearchPlaceholder);
 
             if (SelectedListType_t == ListType.Monsters) {
                 MainList_textblock.Text = GetCultureText(TranslationDictionaryIndex.Monsters);
@@ -614,20 +619,22 @@ namespace Canary_monster_editor
 
             if (SelectedListType_t == ListType.Monsters) {
                 foreach (var monster in GlobalStaticData.Monster) {
+                    // Null-safe comparison
                     bool matches = string.IsNullOrEmpty(filter) ||
-                                monster.Name.ToLower().Contains(filter) ||
+                                (monster.Name ?? string.Empty).ToLower().Contains(filter) ||
                                 monster.Raceid.ToString().Contains(filter);
                     if (matches) {
-                        MainList_listbox.Items.Add(new InternalItemList(monster.Name, monster.Raceid));
+                        MainList_listbox.Items.Add(new InternalItemList(monster.Name ?? string.Empty, monster.Raceid));
                     }
                 }
             } else if (SelectedListType_t == ListType.Bosses) {
                 foreach (var boss in GlobalStaticData.Boss) {
+                    // Null-safe comparison
                     bool matches = string.IsNullOrEmpty(filter) ||
-                                boss.Name.ToLower().Contains(filter) ||
+                                (boss.Name ?? string.Empty).ToLower().Contains(filter) ||
                                 boss.Id.ToString().Contains(filter);
                     if (matches) {
-                        MainList_listbox.Items.Add(new InternalItemList(boss.Name, boss.Id));
+                        MainList_listbox.Items.Add(new InternalItemList(boss.Name ?? string.Empty, boss.Id));
                     }
                 }
             }
