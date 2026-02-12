@@ -32,7 +32,6 @@ namespace Canary_monster_editor
                 return false;
             }
 
-            // Reinicialize para garantir o valor máximo
             GlobalLastCreatureId = 0;
 
             foreach (var monster in GlobalStaticData.Monster)
@@ -288,6 +287,10 @@ namespace Canary_monster_editor
             ErrorInvalidAssetsFolder = 36,
             SelectFolderStaticData = 37,
             SelectFolderAssets = 38,
+            ErrorTitle = 39,
+            ErrorNoStaticDataFound = 40,
+            ErrorLoadStaticDataFailed = 41,
+            ErrorLoadAssetsFailed = 42,
         }
         public static readonly Dictionary<TranslationDictionaryIndex, string> TranslationDictionary_portuguese = new Dictionary<TranslationDictionaryIndex, string>
         {
@@ -330,6 +333,10 @@ namespace Canary_monster_editor
             [TranslationDictionaryIndex.ErrorInvalidAssetsFolder] = "Não foram encontrados arquivos de assets válidos na pasta selecionada.\n\nArquivos esperados:\n- catalog-content.json (Tibia 12+), ou\n- appearances.dat/spr ou Tibia.dat/spr (versões antigas)\n\nPor favor, selecione uma pasta válida contendo os arquivos de assets.",
             [TranslationDictionaryIndex.SelectFolderStaticData] = "Selecione a pasta contendo staticdata-*.dat",
             [TranslationDictionaryIndex.SelectFolderAssets] = "Selecione a pasta contendo os assets",
+            [TranslationDictionaryIndex.ErrorTitle] = "Erro",
+            [TranslationDictionaryIndex.ErrorNoStaticDataFound] = "Nenhum arquivo staticdata-*.dat encontrado na pasta selecionada.",
+            [TranslationDictionaryIndex.ErrorLoadStaticDataFailed] = "Falha ao carregar o arquivo staticdata.",
+            [TranslationDictionaryIndex.ErrorLoadAssetsFailed] = "Falha ao carregar os assets. Verifique se a pasta contém os arquivos necessários.",
         };
         public static readonly Dictionary<TranslationDictionaryIndex, string> TranslationDictionary_english = new Dictionary<TranslationDictionaryIndex, string>
         {
@@ -372,6 +379,10 @@ namespace Canary_monster_editor
             [TranslationDictionaryIndex.ErrorInvalidAssetsFolder] = "No valid asset files found in the selected folder.\n\nExpected files:\n- catalog-content.json (Tibia 12+), or\n- appearances.dat/spr or Tibia.dat/spr (older versions)\n\nPlease select a valid folder containing asset files.",
             [TranslationDictionaryIndex.SelectFolderStaticData] = "Select the folder containing staticdata-*.dat",
             [TranslationDictionaryIndex.SelectFolderAssets] = "Select the folder containing assets",
+            [TranslationDictionaryIndex.ErrorTitle] = "Error",
+            [TranslationDictionaryIndex.ErrorNoStaticDataFound] = "No staticdata-*.dat file found in the selected folder.",
+            [TranslationDictionaryIndex.ErrorLoadStaticDataFailed] = "Failed to load staticdata file.",
+            [TranslationDictionaryIndex.ErrorLoadAssetsFailed] = "Failed to load assets. Please verify the folder contains the required files.",
         };
         public static string GetCultureText(TranslationDictionaryIndex index)
         {

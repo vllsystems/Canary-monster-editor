@@ -146,43 +146,58 @@ namespace Canary_monster_editor
                     }
                 }
 
-                // If still null, try to find ANY .dat and .spr pair in the directory, recursively
+                // If still null, try to find matching .dat and .spr pair in limited subdirectories
                 if (sprPath == null || datPath == null)
                 {
-                    try 
+                    try
                     {
-                        var allDatFiles = Directory.EnumerateFiles(assetPath, "*.dat", SearchOption.AllDirectories).ToList();
-                        
-                        // First pass: look for exact match in same directory
-                        foreach (var df in allDatFiles)
+                        string[] knownSubdirs = { "data", "sprites", "assets" };
+                        var foundPairs = new List<(string dat, string spr)>();
+
+                        // Search in root first
+                        var rootDatFiles = Directory.EnumerateFiles(assetPath, "*.dat", SearchOption.TopDirectoryOnly).ToList();
+                        foreach (var df in rootDatFiles)
                         {
-                            string dir = Path.GetDirectoryName(df);
                             string nameNoExt = Path.GetFileNameWithoutExtension(df);
-                            string matchingSpr = Path.Combine(dir, nameNoExt + ".spr");
-                            
+                            string matchingSpr = Path.Combine(assetPath, nameNoExt + ".spr");
                             if (File.Exists(matchingSpr))
                             {
-                                datPath = df;
-                                sprPath = matchingSpr;
-                                break;
+                                foundPairs.Add((df, matchingSpr));
                             }
                         }
 
-                        // Second pass: if no exact match, try to find "Tibia.spr" or "appearances.spr" anywhere and pair with first valid dat
-                        if (sprPath == null && allDatFiles.Count > 0)
+                        // Search in known subdirectories (1 level deep only)
+                        foreach (var subdir in knownSubdirs)
                         {
-                            var allSprFiles = Directory.EnumerateFiles(assetPath, "*.spr", SearchOption.AllDirectories).ToList();
-                            if (allSprFiles.Count > 0)
+                            string subPath = Path.Combine(assetPath, subdir);
+                            if (!Directory.Exists(subPath)) continue;
+
+                            var subDatFiles = Directory.EnumerateFiles(subPath, "*.dat", SearchOption.TopDirectoryOnly).ToList();
+                            foreach (var df in subDatFiles)
                             {
-                                // naive fallback: take the first .dat and the first .spr found
-                                // This solves the case where users have "Tibia.dat" in one folder and "Tibia.spr" in another, or renamed files.
-                                datPath = allDatFiles[0];
-                                sprPath = allSprFiles[0];
+                                string nameNoExt = Path.GetFileNameWithoutExtension(df);
+                                string matchingSpr = Path.Combine(subPath, nameNoExt + ".spr");
+                                if (File.Exists(matchingSpr))
+                                {
+                                    foundPairs.Add((df, matchingSpr));
+                                }
                             }
                         }
+
+                        if (foundPairs.Count == 1)
+                        {
+                            datPath = foundPairs[0].dat;
+                            sprPath = foundPairs[0].spr;
+                        }
+                        else if (foundPairs.Count > 1)
+                        {
+                            // Multiple pairs found - use first one (could prompt user in future)
+                            datPath = foundPairs[0].dat;
+                            sprPath = foundPairs[0].spr;
+                        }
                     }
-                    catch (Exception ex) 
-                    { 
+                    catch (Exception ex)
+                    {
                         System.Windows.MessageBox.Show("Error searching for files: " + ex.Message);
                     }
                 }
@@ -309,24 +324,7 @@ namespace Canary_monster_editor
 
         private byte[] DecompressLzmaBytes(byte[] data)
         {
-            if (data == null || data.Length < 13) return null;
-
-            using (var input = new MemoryStream(data))
-            using (var output = new MemoryStream())
-            {
-                byte[] props = new byte[5];
-                if (input.Read(props, 0, 5) != 5) return null;
-
-                var decoder = new SevenZip.Compression.LZMA.Decoder();
-                decoder.SetDecoderProperties(props);
-
-                byte[] sizeBytes = new byte[8];
-                if (input.Read(sizeBytes, 0, 8) != 8) return null;
-
-                // CIP header stores compressed size; ignore it and decode until stream end.
-                decoder.Code(input, output, -1, -1, null);
-                return output.ToArray();
-            }
+            return LzmaUtils.DecompressLzma(data);
         }
 
         private ClientAppearance ParseAppearance(ByteString data)

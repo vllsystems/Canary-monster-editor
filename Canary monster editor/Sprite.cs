@@ -52,34 +52,35 @@ namespace Canary_monster_editor
 
             for (read = 0; read < length; read += 4 + (bitPerPixel * coloredPixels))
             {
+                if (pos + 4 > CompressedPixels.Length) break;
+
                 transparentPixels = CompressedPixels[pos++] | CompressedPixels[pos++] << 8;
                 coloredPixels = CompressedPixels[pos++] | CompressedPixels[pos++] << 8;
 
-                if (write + (transparentPixels * 4) <= pixels.Length)
+                if (write + (transparentPixels * 4) > pixels.Length) break;
+
+                for (int i = 0; i < transparentPixels; i++)
                 {
-                    for (int i = 0; i < transparentPixels; i++)
-                    {
-                        pixels[write++] = 0x00; // Blue
-                        pixels[write++] = 0x00; // Green
-                        pixels[write++] = 0x00; // Red
-                        pixels[write++] = 0x00; // Alpha
-                    }
+                    pixels[write++] = 0x00; // Blue
+                    pixels[write++] = 0x00; // Green
+                    pixels[write++] = 0x00; // Red
+                    pixels[write++] = 0x00; // Alpha
                 }
 
-                if (write + (coloredPixels * 4) <= pixels.Length && pos + (coloredPixels * (Transparent ? 4 : 3)) <= CompressedPixels.Length)
-                {
-                    for (int i = 0; i < coloredPixels; i++)
-                    {
-                        byte red = CompressedPixels[pos++];
-                        byte green = CompressedPixels[pos++];
-                        byte blue = CompressedPixels[pos++];
-                        byte alpha = Transparent ? CompressedPixels[pos++] : (byte)0xFF;
+                if (write + (coloredPixels * 4) > pixels.Length ||
+                    pos + (coloredPixels * (Transparent ? 4 : 3)) > CompressedPixels.Length) break;
 
-                        pixels[write++] = blue;
-                        pixels[write++] = green;
-                        pixels[write++] = red;
-                        pixels[write++] = alpha;
-                    }
+                for (int i = 0; i < coloredPixels; i++)
+                {
+                    byte red = CompressedPixels[pos++];
+                    byte green = CompressedPixels[pos++];
+                    byte blue = CompressedPixels[pos++];
+                    byte alpha = Transparent ? CompressedPixels[pos++] : (byte)0xFF;
+
+                    pixels[write++] = blue;
+                    pixels[write++] = green;
+                    pixels[write++] = red;
+                    pixels[write++] = alpha;
                 }
             }
 
@@ -129,13 +130,13 @@ namespace Canary_monster_editor
         public uint Signature;
         public bool Transparency;
         public Dictionary<uint, Sprite> Sprites { get; set; }
-        public ConcurrentDictionary<int, MemoryStream> SprLists { get; set; }
+        public ConcurrentDictionary<uint, byte[]> SprLists { get; set; }
 
         public SpriteStorage(string path, bool transparency)
         {
             SprPath = path;
             Sprites = new Dictionary<uint, Sprite>();
-            SprLists = new ConcurrentDictionary<int, MemoryStream>();
+            SprLists = new ConcurrentDictionary<uint, byte[]>();
             Transparency = transparency;
         }
 
@@ -167,10 +168,10 @@ namespace Canary_monster_editor
         public MemoryStream getSpriteStream(uint id)
         {
             if (id == 0) return new MemoryStream();
-            
-            if (SprLists.TryGetValue((int)id, out var stream) && stream != null && stream.Length > 0)
+
+            if (SprLists.TryGetValue(id, out var cachedBytes) && cachedBytes != null && cachedBytes.Length > 0)
             {
-                return stream;
+                return new MemoryStream(cachedBytes, writable: false);
             }
 
             if (!Sprites.ContainsKey(id)) return new MemoryStream();
@@ -189,15 +190,20 @@ namespace Canary_monster_editor
                 sprite.CompressedPixels = reader.ReadBytes((ushort)sprite.Size);
             }
 
+            byte[] pngBytes;
             using (Bitmap bmp = sprite.GetBitmap())
             {
-                sprite.MemoryStream = new MemoryStream();
-                bmp.Save(sprite.MemoryStream, ImageFormat.Png);
+                using (var tempStream = new MemoryStream())
+                {
+                    bmp.Save(tempStream, ImageFormat.Png);
+                    pngBytes = tempStream.ToArray();
+                }
             }
-            sprite.CompressedPixels = null;
-            SprLists[(int)sprite.ID] = sprite.MemoryStream;
 
-            return SprLists[(int)sprite.ID];
+            sprite.CompressedPixels = null;
+            SprLists[sprite.ID] = pngBytes;
+
+            return new MemoryStream(pngBytes, writable: false);
         }
     }
 }

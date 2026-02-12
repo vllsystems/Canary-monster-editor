@@ -182,20 +182,20 @@ namespace Canary_monster_editor
 
                             string staticDataFile = FindLatestStaticDataFile(loadWindow.StaticDataPath);
                             if (string.IsNullOrEmpty(staticDataFile)) {
-                                MessageBox.Show("Nenhum arquivo staticdata-*.dat encontrado na pasta selecionada.",
-                                    "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+                                MessageBox.Show(GetCultureText(TranslationDictionaryIndex.ErrorNoStaticDataFound),
+                                    GetCultureText(TranslationDictionaryIndex.ErrorTitle), MessageBoxButton.OK, MessageBoxImage.Error);
                                 return;
                             }
 
                             if (!LoadStaticDataProbufBinaryFileFromPath(staticDataFile)) {
-                                MessageBox.Show("Falha ao carregar o arquivo staticdata.",
-                                    "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+                                MessageBox.Show(GetCultureText(TranslationDictionaryIndex.ErrorLoadStaticDataFailed),
+                                    GetCultureText(TranslationDictionaryIndex.ErrorTitle), MessageBoxButton.OK, MessageBoxImage.Error);
                                 return;
                             }
 
                             if (!AssetLoader.Instance.LoadAssets(loadWindow.AssetsPath)) {
-                                MessageBox.Show("Falha ao carregar os assets. Verifique se a pasta contém os arquivos necessários.",
-                                    "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+                                MessageBox.Show(GetCultureText(TranslationDictionaryIndex.ErrorLoadAssetsFailed),
+                                    GetCultureText(TranslationDictionaryIndex.ErrorTitle), MessageBoxButton.OK, MessageBoxImage.Error);
                                 return;
                             }
 
@@ -312,7 +312,7 @@ namespace Canary_monster_editor
 
                             uint parsedUint = 0;
                             uint.TryParse(ShowLookType_textbox.Text, out parsedUint);
-                            monster.AppearanceType.Outfittype = 0;
+                            monster.AppearanceType.Outfittype = parsedUint;
                             parsedUint = 0;
 
                             uint.TryParse(ShowAddon_textbox.Text, out parsedUint);

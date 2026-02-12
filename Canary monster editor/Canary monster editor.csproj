@@ -247,6 +247,7 @@
     <Compile Include="Lzma.cs" />
     <Compile Include="SpriteCatalogStorage.cs" />
     <Compile Include="Sprite.cs" />
+    <Compile Include="LzmaUtils.cs" />
     <Compile Include="ExportImportWindow.xaml.cs">
       <DependentUpon>ExportImportWindow.xaml</DependentUpon>
     </Compile>

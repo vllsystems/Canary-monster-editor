@@ -84,14 +84,14 @@ namespace Canary_monster_editor
             if (string.IsNullOrEmpty(StaticDataPath_textbox.Text))
             {
                 MessageBox.Show(GetCultureText(TranslationDictionaryIndex.SelectFolderStaticData),
-                    "Erro", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    GetCultureText(TranslationDictionaryIndex.ErrorTitle), MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (!Directory.Exists(StaticDataPath_textbox.Text))
             {
                 MessageBox.Show(GetCultureText(TranslationDictionaryIndex.ErrorStaticDataNotFound),
-                    "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+                    GetCultureText(TranslationDictionaryIndex.ErrorTitle), MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -99,21 +99,21 @@ namespace Canary_monster_editor
             if (staticDataFiles.Length == 0)
             {
                 MessageBox.Show(GetCultureText(TranslationDictionaryIndex.ErrorStaticDataNotFound),
-                    "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+                    GetCultureText(TranslationDictionaryIndex.ErrorTitle), MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
             if (string.IsNullOrEmpty(AssetsPath_textbox.Text))
             {
                 MessageBox.Show(GetCultureText(TranslationDictionaryIndex.SelectFolderAssets),
-                    "Erro", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    GetCultureText(TranslationDictionaryIndex.ErrorTitle), MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (!Directory.Exists(AssetsPath_textbox.Text))
             {
                 MessageBox.Show(GetCultureText(TranslationDictionaryIndex.ErrorAssetsNotFound),
-                    "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+                    GetCultureText(TranslationDictionaryIndex.ErrorTitle), MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -134,20 +134,18 @@ namespace Canary_monster_editor
             else
             {
                 string[] datFiles = { "appearances.dat", "Tibia.dat" };
-                string[] sprFiles = { "appearances.spr", "Tibia.spr" };
 
                 foreach (var dat in datFiles)
                 {
-                    foreach (var spr in sprFiles)
+                    string baseName = Path.GetFileNameWithoutExtension(dat);
+                    string spr = baseName + ".spr";
+
+                    if (File.Exists(Path.Combine(assetsPath, dat)) &&
+                        File.Exists(Path.Combine(assetsPath, spr)))
                     {
-                        if (File.Exists(Path.Combine(assetsPath, dat)) &&
-                            File.Exists(Path.Combine(assetsPath, spr)))
-                        {
-                            hasValidAssets = true;
-                            break;
-                        }
+                        hasValidAssets = true;
+                        break;
                     }
-                    if (hasValidAssets) break;
                 }
 
                 if (!hasValidAssets && Directory.Exists(Path.Combine(assetsPath, "assets")))
@@ -155,16 +153,15 @@ namespace Canary_monster_editor
                     string subPath = Path.Combine(assetsPath, "assets");
                     foreach (var dat in datFiles)
                     {
-                        foreach (var spr in sprFiles)
+                        string baseName = Path.GetFileNameWithoutExtension(dat);
+                        string spr = baseName + ".spr";
+
+                        if (File.Exists(Path.Combine(subPath, dat)) &&
+                            File.Exists(Path.Combine(subPath, spr)))
                         {
-                            if (File.Exists(Path.Combine(subPath, dat)) &&
-                                File.Exists(Path.Combine(subPath, spr)))
-                            {
-                                hasValidAssets = true;
-                                break;
-                            }
+                            hasValidAssets = true;
+                            break;
                         }
-                        if (hasValidAssets) break;
                     }
                 }
             }

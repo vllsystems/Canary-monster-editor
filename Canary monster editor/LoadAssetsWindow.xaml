@@ -4,6 +4,7 @@
         Title="Load Assets and StaticData" Height="300" Width="600"
         WindowStartupLocation="CenterOwner"
         WindowStyle="None"
+        AllowsTransparency="True"
         ResizeMode="NoResize"
         Background="Transparent">
 

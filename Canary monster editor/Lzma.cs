@@ -79,7 +79,7 @@ namespace SevenZip.Compression.LZ
             uint size = _pos - _streamPos;
             if (size == 0) return;
             _stream.Write(_buffer, (int)_streamPos, (int)size);
-            if (_streamPos >= _windowSize) _pos = 0;
+            if (_pos >= _windowSize) _pos = 0;
             _streamPos = _pos;
         }
 

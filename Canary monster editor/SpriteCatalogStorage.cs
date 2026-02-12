@@ -8,7 +8,8 @@ using Newtonsoft.Json;
 
 namespace Canary_monster_editor
 {
-    public class SpriteCatalogStorage
+
+    public class SpriteCatalogStorage : IDisposable
     {
         public class SpriteCatalogEntry
         {
@@ -48,6 +49,7 @@ namespace Canary_monster_editor
         private readonly ConcurrentDictionary<uint, byte[]> spritePngCache = new ConcurrentDictionary<uint, byte[]>();
         private readonly object sheetLock = new object();
         private static readonly object logLock = new object();
+        private bool disposed = false;
 
         private static void AppendLog(string message)
         {
@@ -93,10 +95,15 @@ namespace Canary_monster_editor
             {
                 var entry = entries[i];
                 if (!entry.FirstSpriteId.HasValue || !entry.LastSpriteId.HasValue) continue;
-                for (uint id = entry.FirstSpriteId.Value; id <= entry.LastSpriteId.Value; id++)
+                if (entry.FirstSpriteId.Value > entry.LastSpriteId.Value) continue;
+
+                uint id = entry.FirstSpriteId.Value;
+                do
                 {
                     spriteMap[id] = i;
-                }
+                    if (id == entry.LastSpriteId.Value) break;
+                    id++;
+                } while (true);
             }
         }
 
@@ -116,6 +123,12 @@ namespace Canary_monster_editor
             var sheet = GetOrLoadSheet(entry);
             if (sheet == null) return new MemoryStream();
 
+            if (sheet.TileWidth <= 0 || sheet.TileHeight <= 0 || sheet.SpritesPerRow <= 0)
+            {
+                AppendLog($"SpriteCatalogStorage: Invalid sheet metadata for {spriteId} (TW={sheet.TileWidth}, TH={sheet.TileHeight}, SPR={sheet.SpritesPerRow})");
+                return new MemoryStream();
+            }
+
             int index = (int)(spriteId - sheet.FirstSpriteId);
             if (index < 0 || index >= sheet.TotalSprites) return new MemoryStream();
 
@@ -123,24 +136,26 @@ namespace Canary_monster_editor
             int col = index % sheet.SpritesPerRow;
 
             var src = new Rectangle(col * sheet.TileWidth, row * sheet.TileHeight, sheet.TileWidth, sheet.TileHeight);
-            if (sheet.TileWidth <= 0 || sheet.TileHeight <= 0 || sheet.SpritesPerRow <= 0)
+
+            Bitmap sheetClone;
+            lock (sheetLock)
             {
-                AppendLog($"SpriteCatalogStorage: Invalid sheet metadata for {spriteId} (TW={sheet.TileWidth}, TH={sheet.TileHeight}, SPR={sheet.SpritesPerRow})");
-                return new MemoryStream();
+                if (src.X < 0 || src.Y < 0 || src.Right > sheet.Sheet.Width || src.Bottom > sheet.Sheet.Height)
+                {
+                    AppendLog($"SpriteCatalogStorage: Source rect out of bounds for {spriteId} (src={src}, sheet={sheet.Sheet.Width}x{sheet.Sheet.Height}, first={sheet.FirstSpriteId})");
+                    return new MemoryStream();
+                }
+
+                sheetClone = new Bitmap(sheet.Sheet);
             }
 
-            if (src.X < 0 || src.Y < 0 || src.Right > sheet.Sheet.Width || src.Bottom > sheet.Sheet.Height)
-            {
-                AppendLog($"SpriteCatalogStorage: Source rect out of bounds for {spriteId} (src={src}, sheet={sheet.Sheet.Width}x{sheet.Sheet.Height}, first={sheet.FirstSpriteId})");
-                return new MemoryStream();
-            }
-
+            using (sheetClone)
             using (var tile = new Bitmap(sheet.TileWidth, sheet.TileHeight, PixelFormat.Format32bppArgb))
             using (var g = Graphics.FromImage(tile))
             {
                 g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
                 g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
-                g.DrawImage(sheet.Sheet, new Rectangle(0, 0, sheet.TileWidth, sheet.TileHeight), src, GraphicsUnit.Pixel);
+                g.DrawImage(sheetClone, new Rectangle(0, 0, sheet.TileWidth, sheet.TileHeight), src, GraphicsUnit.Pixel);
 
                 using (var ms = new MemoryStream())
                 {
@@ -205,7 +220,7 @@ namespace Canary_monster_editor
 
                             var sheet = new SpriteSheetCacheEntry
                             {
-                                Sheet = (Bitmap)bmp.Clone(),
+                                Sheet = new Bitmap(bmp),
                                 TileWidth = tileW,
                                 TileHeight = tileH,
                                 SpritesPerRow = spritesPerRow,
@@ -362,6 +377,38 @@ namespace Canary_monster_editor
                 patched[i] = 0xFF;
             }
             return patched;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed) return;
+
+            if (disposing)
+            {
+                lock (sheetLock)
+                {
+                    foreach (var entry in sheetCache.Values)
+                    {
+                        entry.Sheet?.Dispose();
+                        entry.Sheet = null;
+                    }
+                    sheetCache.Clear();
+                    spritePngCache.Clear();
+                }
+            }
+
+            disposed = true;
+        }
+
+        private void CheckDisposed()
+        {
+            if (disposed) throw new ObjectDisposedException(nameof(SpriteCatalogStorage));
         }
     }
 }
