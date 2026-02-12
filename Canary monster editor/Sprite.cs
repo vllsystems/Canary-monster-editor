@@ -145,7 +145,7 @@ namespace Canary_monster_editor
             Sprite.CreateBlankSprite();
             if (!File.Exists(SprPath)) return;
 
-            using (FileStream fileStream = new FileStream(SprPath, FileMode.Open, FileAccess.Read))
+            using (FileStream fileStream = new FileStream(SprPath, FileMode.Open, FileAccess.Read, FileShare.Read))
             using (BinaryReader reader = new BinaryReader(fileStream))
             {
                 Signature = reader.ReadUInt32();
@@ -177,7 +177,7 @@ namespace Canary_monster_editor
             if (!Sprites.ContainsKey(id)) return new MemoryStream();
 
             Sprite sprite = Sprites[id];
-            using (FileStream fileStream = new FileStream(SprPath, FileMode.Open, FileAccess.Read))
+            using (FileStream fileStream = new FileStream(SprPath, FileMode.Open, FileAccess.Read, FileShare.Read))
             using (BinaryReader reader = new BinaryReader(fileStream))
             {
                 // Assuming extended (8 bytes header + uint32 for each index)
