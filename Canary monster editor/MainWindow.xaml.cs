@@ -304,8 +304,13 @@ namespace Canary_monster_editor
                             return;
                         }
 
-                        uint newRaceId = 0;
-                        bool idChanged = uint.TryParse(ShowRaceId_textbox.Text, out newRaceId) && newRaceId != monster.Raceid;
+                        if (!uint.TryParse(ShowRaceId_textbox.Text, out uint newRaceId) || newRaceId == 0) {
+                            MessageBox.Show("ID must be a valid positive number.",
+                                "Invalid ID", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            ShowRaceId_textbox.Text = monster.Raceid.ToString();
+                            return;
+                        }
+                        bool idChanged = newRaceId != monster.Raceid;
 
                         if (idChanged) {
                             Monster existingMonster = GetMonsterByRaceId(newRaceId);
