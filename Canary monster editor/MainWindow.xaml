@@ -113,6 +113,43 @@
                             TextWrapping="Wrap"
                             IsHitTestVisible="False"/>
                 </Grid>
+                <Grid Width="280" Height="35" Margin="20,0,0,0" VerticalAlignment="Center">
+                    <Rectangle Fill="#FF2D2D30" RadiusX="17.5" RadiusY="17.5" Opacity="0.8"/>
+                    <TextBox x:Name="Search_textbox"
+                            TextChanged="Search_textbox_TextChanged"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Foreground="White"
+                            VerticalContentAlignment="Center"
+                            Padding="35,0,15,0"
+                            FontSize="13"
+                            FontFamily="Segoe UI"
+                            CaretBrush="White"/>
+                    <TextBlock x:Name="SearchPlaceholder_textblock"
+                            Text="Search by name or ID..."
+                            IsHitTestVisible="False"
+                            Foreground="#FF888888"
+                            VerticalAlignment="Center"
+                            Margin="35,0,0,0"
+                            FontSize="13">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Text, ElementName=Search_textbox}" Value="">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <TextBlock Text="🔍"
+                            Foreground="#FF888888"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Margin="12,0,0,0"
+                            FontSize="14"/>
+                </Grid>
             </StackPanel>
             <Grid HorizontalAlignment="Right">
                 <Rectangle Fill="#FF18191D" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Stroke="Black"/>
@@ -150,9 +187,13 @@
             <Rectangle MouseDown="MouseDownToDrag_var" Fill="White" Opacity="0"/>
             <TextBlock x:Name="BossAppearance_textblock" Text="BossAppearance_textblock" Margin="0,5,5,0" Foreground="White" FontWeight="Normal" FontSize="10" HorizontalAlignment="Right" VerticalAlignment="Top" Background="#FFA62F26" Padding="5,5,5,5" Opacity="0"/>
             <StackPanel>
-                <Image Margin="0,25,0,0" Source="/main-logo.png" Width="80" Opacity="0.75" IsHitTestVisible="False" />
-                <TextBlock x:Name="ToolName_textblock" Text="ToolName_textblock" Foreground="#FF75756E" HorizontalAlignment="Center" FontWeight="Bold" FontSize="14" IsHitTestVisible="False"/>
-                <StackPanel Margin="0,25,0,0" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Center">
+                <Grid x:Name="PreviewArea_grid" Height="128" Width="128" HorizontalAlignment="Center" Margin="0,15,0,15">
+                    <Rectangle Fill="#FF23242D" RadiusX="4" RadiusY="4"/>
+                    <Rectangle Stroke="#FF383838" StrokeThickness="1" RadiusX="4" RadiusY="4" Opacity="0.5"/>
+                    <Image x:Name="MonsterPreview_image" Stretch="None" RenderOptions.BitmapScalingMode="NearestNeighbor" IsHitTestVisible="False"/>
+                    <TextBlock x:Name="PreviewStatus_textblock" Foreground="#FF555555" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="10" IsHitTestVisible="False"/>
+                </Grid>
+                <StackPanel Margin="0,0,0,0" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Center">
                     <TextBlock x:Name="ShowName_textblock" Text="ShowName_textblock" Margin="0,0,5,0" IsHitTestVisible="False" Foreground="#FFACAFAF" VerticalAlignment="Center"/>
                     <TextBox x:Name="ShowName_textbox" TextChanged="TextChanged_textblock" Width="220" Background="#FF23242D" Foreground="#FFABADB3"/>
                     <TextBlock Text="ID: " Margin="10,0,5,0" IsHitTestVisible="False" Foreground="#FFACAFAF" VerticalAlignment="Center" FontSize="14"/>
