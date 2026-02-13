@@ -294,6 +294,7 @@ namespace Canary_monster_editor
             ClickToLoadAssets = 43,
             NoPreview = 44,
             PreviewError = 45,
+            SearchPlaceholder = 46,
         }
         public static readonly Dictionary<TranslationDictionaryIndex, string> TranslationDictionary_portuguese = new Dictionary<TranslationDictionaryIndex, string>
         {
@@ -325,6 +326,7 @@ namespace Canary_monster_editor
             [TranslationDictionaryIndex.SelectAll] = "Selecionar Todos",
             [TranslationDictionaryIndex.DeselectAll] = "Desmarcar Todos",
             [TranslationDictionaryIndex.ExportSelected] = "Exportar Selecionados",
+            [TranslationDictionaryIndex.SearchPlaceholder] = "Buscar por nome ou ID...",
             [TranslationDictionaryIndex.Load] = "Carregar",
             [TranslationDictionaryIndex.LoadAssetsAndStaticData] = "Carregar Assets e StaticData",
             [TranslationDictionaryIndex.StaticDataPath] = "Caminho do StaticData:",
@@ -374,6 +376,7 @@ namespace Canary_monster_editor
             [TranslationDictionaryIndex.SelectAll] = "Select All",
             [TranslationDictionaryIndex.DeselectAll] = "Deselect All",
             [TranslationDictionaryIndex.ExportSelected] = "Export Selected",
+            [TranslationDictionaryIndex.SearchPlaceholder] = "Search by name or ID...",
             [TranslationDictionaryIndex.Load] = "Load",
             [TranslationDictionaryIndex.LoadAssetsAndStaticData] = "Load Assets and StaticData",
             [TranslationDictionaryIndex.StaticDataPath] = "StaticData Path:",
